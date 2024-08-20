@@ -56,7 +56,10 @@ export class UserService {
         username: user.username,
         email: user.email,
         total_task: user.total_tasks,
+        created_at: user.createdAt,
+        updated_at: user.updatedAt,
       };
+      //   return user;
     } catch (err) {
       throw new InternalServerErrorException('An Error Occurred -> ', err);
     }
@@ -81,10 +84,10 @@ export class UserService {
     }
   }
 
-  async updateUser(updateUserDto: UpdateUserDto) {
+  async updateUser(id: number, updateUserDto: UpdateUserDto) {
     try {
       const userToUpdate = await this.userRepo.findOne({
-        where: { email: updateUserDto.email },
+        where: { id },
       });
 
       if (!userToUpdate) {
@@ -119,7 +122,7 @@ export class UserService {
     }
   }
 
-  async updateTask(id: number) {
+  async updateTaskCount(id: number) {
     try {
       const user = await this.userRepo.findOne({ where: { id } });
       if (!user) {
@@ -133,6 +136,7 @@ export class UserService {
 
       Object.assign(user, update);
       await this.userRepo.save(user);
+      return `Added New task for the user -> ${user.username}`;
     } catch (err) {
       throw new InternalServerErrorException('An Error Occurred -> ', err);
     }
