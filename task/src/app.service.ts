@@ -6,7 +6,7 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 
 @Injectable()
-export class AppService {
+export class TaskService {
   constructor(
     @InjectRepository(Task) private readonly taskRepo: Repository<Task>,
   ) {}
@@ -16,7 +16,7 @@ export class AppService {
       const newTask = await this.taskRepo.create(task);
       const result = await this.taskRepo.save(newTask);
 
-      return `New Task Added -> ${result.title}`;
+      return result;
     } catch (err) {
       throw new InternalServerErrorException('An error occurred -> ', err);
     }
