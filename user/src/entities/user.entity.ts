@@ -20,6 +20,9 @@ export class User {
   @Column()
   password: any;
 
+  @Column()
+  total_tasks: number;
+
   @CreateDateColumn()
   createdAt: Date;
 
