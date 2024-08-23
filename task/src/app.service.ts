@@ -1,9 +1,14 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from './entities/task.entity';
 import { Repository } from 'typeorm';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { ErrorResponse } from './utils/error.response.util';
 
 @Injectable()
 export class TaskService {
@@ -18,7 +23,7 @@ export class TaskService {
 
       return result;
     } catch (err) {
-      throw new InternalServerErrorException('An error occurred -> ', err);
+      ErrorResponse.handleError(err, 'while creating task');
     }
   }
 
@@ -26,14 +31,11 @@ export class TaskService {
     try {
       const task = await this.taskRepo.findOne({ where: { id } });
       if (!task) {
-        return {
-          message: 'No Task Was Found',
-        };
+        throw new NotFoundException('NO task was found');
       }
-
       return task;
     } catch (err) {
-      throw new InternalServerErrorException('An Error Occurred -> ', err);
+      ErrorResponse.handleError(err, 'while getting task by id ');
     }
   }
 
@@ -41,12 +43,12 @@ export class TaskService {
     try {
       const tasks = await this.taskRepo.find();
       if (tasks.length == 0) {
-        return { message: 'task list is empty' };
+        throw new NotFoundException('Task list is empty');
       }
 
       return tasks;
     } catch (err) {
-      throw new InternalServerErrorException('An Error Occurred -> ', err);
+      ErrorResponse.handleError(err, 'while getting all tasks');
     }
   }
 
@@ -54,7 +56,7 @@ export class TaskService {
     try {
       const task = await this.taskRepo.findOne({ where: { id } });
       if (!task) {
-        return { message: 'No task found' };
+        throw new NotFoundException('Task not found');
       }
 
       Object.assign(task, updateTaskDto);
@@ -62,7 +64,7 @@ export class TaskService {
 
       return result;
     } catch (err) {
-      throw new InternalServerErrorException('An Error Occurred -> ', err);
+      ErrorResponse.handleError(err, 'while updating task');
     }
   }
 
@@ -70,13 +72,13 @@ export class TaskService {
     try {
       const task = await this.taskRepo.findOne({ where: { id } });
       if (!task) {
-        return { message: 'No task found' };
+        throw new NotFoundException('Task not found');
       }
 
       await this.taskRepo.remove(task);
       return 'task deleted successfully';
     } catch (err) {
-      throw new InternalServerErrorException('An Error Occurred -> ', err);
+      ErrorResponse.handleError(err, 'while deleting task');
     }
   }
 
@@ -84,7 +86,7 @@ export class TaskService {
     try {
       const task = await this.taskRepo.findOne({ where: { id } });
       if (!task) {
-        return { message: 'No task was found' };
+        throw new NotFoundException('Task not found');
       }
 
       const updateStatus = {
@@ -97,7 +99,7 @@ export class TaskService {
 
       return result;
     } catch (err) {
-      throw new InternalServerErrorException('An Error Occurred -> ', err);
+      ErrorResponse.handleError(err, 'while updating task status');
     }
   }
 }
