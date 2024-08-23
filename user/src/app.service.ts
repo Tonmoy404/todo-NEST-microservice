@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
@@ -9,6 +10,7 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ErrorResponse } from './utils/error.response.util';
 
 @Injectable()
 export class UserService {
@@ -35,7 +37,7 @@ export class UserService {
       const result = await this.userRepo.save(newUser);
       return `New User Created -> ${result.username}`;
     } catch (err) {
-      throw new InternalServerErrorException('An Error Occured -> ', err);
+      ErrorResponse.handleError(err, 'while creating the user');
     }
   }
 
@@ -50,7 +52,7 @@ export class UserService {
     try {
       const user = await this.userRepo.findOne({ where: { id } });
       if (!user) {
-        return { message: 'User Not Found' };
+        throw new NotFoundException('User does not exists');
       }
       return {
         username: user.username,
@@ -61,7 +63,7 @@ export class UserService {
       };
       //   return user;
     } catch (err) {
-      throw new InternalServerErrorException('An Error Occurred -> ', err);
+      ErrorResponse.handleError(err, 'while getting user by id');
     }
   }
 
@@ -69,9 +71,7 @@ export class UserService {
     try {
       const users = await this.userRepo.find();
       if (users.length == 0) {
-        return {
-          message: 'No Users found',
-        };
+        throw new NotFoundException('No User was found');
       }
 
       return users.map((user) => ({
@@ -80,7 +80,7 @@ export class UserService {
         total_task: user.total_tasks,
       }));
     } catch (err) {
-      throw new InternalServerErrorException('An Error Occurred -> ', err);
+      ErrorResponse.handleError(err, 'while getting all users');
     }
   }
 
@@ -91,7 +91,7 @@ export class UserService {
       });
 
       if (!userToUpdate) {
-        return { message: 'User not found' };
+        throw new NotFoundException('User not found');
       }
 
       Object.assign(userToUpdate, updateUserDto);
